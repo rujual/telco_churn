@@ -1,0 +1,83 @@
+name: Read data
+inputs:
+- name: file_name
+  type: CSV
+outputs:
+- name: Output
+  type: <kfp.components._python_op.OutputPath object at 0x7ffaed861e50>
+implementation:
+  container:
+    image: fastgenomics/sklearn
+    command:
+    - sh
+    - -c
+    - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
+      'pandas' 'matplotlib' 'numpy' 'sklearn' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'pandas' 'matplotlib' 'numpy'
+      'sklearn' --user) && "$0" "$@"
+    - python3
+    - -u
+    - -c
+    - |
+      def read_data(file_name )  :
+              # -> NamedTuple('Outputs', [('Cols_drop', int),('Cols_retained', int)]):
+
+          ## Import Required Libraries
+          import pandas as pd
+          import matplotlib.pyplot as plt
+          import numpy as np
+          import sklearn
+
+          #This line may cause problems as file is on the system and not inside container
+
+          df_churn = pd.read_csv(file_name)
+          col1 = len(df_churn.columns)
+          df_churn = df_churn.drop(columns=[])
+
+          empty_cols=['customerID', 'gender', 'SeniorCitizen', 'Partner', 'Dependents',
+                 'tenure', 'PhoneService', 'MultipleLines', 'InternetService',
+                 'OnlineSecurity', 'OnlineBackup', 'DeviceProtection','TechSupport',
+                 'StreamingTV', 'StreamingMovies', 'Contract', 'PaperlessBilling',
+                 'PaymentMethod', 'MonthlyCharges', 'TotalCharges', 'Churn']
+
+          for i in empty_cols:
+              df_churn[i]=df_churn[i].replace(" ",np.nan)
+
+          df_churn.drop('customerID','cluster number', axis=1, inplace=True)
+          df_churn = df_churn.dropna()
+
+          col2 = len(df.columns)
+          df_churn.to_csv('Cleaned_data.csv')
+          out_path = "./Cleaned_data.csv"
+          return out_path
+
+      import argparse
+      _parser = argparse.ArgumentParser(prog='Read data', description='')
+      _parser.add_argument("--file-name", dest="file_name", type=str, required=True, default=argparse.SUPPRESS)
+      _parser.add_argument("----output-paths", dest="_output_paths", type=str, nargs=1)
+      _parsed_args = vars(_parser.parse_args())
+      _output_files = _parsed_args.pop("_output_paths", [])
+
+      _outputs = read_data(**_parsed_args)
+
+      if not hasattr(_outputs, '__getitem__') or isinstance(_outputs, str):
+          _outputs = [_outputs]
+
+      _output_serializers = [
+          str,
+
+      ]
+
+      import os
+      for idx, output_file in enumerate(_output_files):
+          try:
+              os.makedirs(os.path.dirname(output_file))
+          except OSError:
+              pass
+          with open(output_file, 'w') as f:
+              f.write(_output_serializers[idx](_outputs[idx]))
+    args:
+    - --file-name
+    - inputPath: file_name
+    - '----output-paths'
+    - outputPath: Output
