@@ -1,8 +1,9 @@
 name: Rf model
 inputs:
-- name: file_name
-  type: CSV
+- name: input_df
+  type: pd.DataFrame
 - name: n_estimators
+  type: Integer
   default: '100'
   optional: true
 outputs:
@@ -21,25 +22,26 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'pandas' 'matplotlib' 'numpy' 'sklearn' 'imbalanced-learn' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      'pandas' 'matplotlib' 'numpy' 'scikit-learn' 'imbalanced-learn' || PIP_DISABLE_PIP_VERSION_CHECK=1
       python3 -m pip install --quiet --no-warn-script-location 'pandas' 'matplotlib'
-      'numpy' 'sklearn' 'imbalanced-learn' --user) && "$0" "$@"
+      'numpy' 'scikit-learn' 'imbalanced-learn' --user) && "$0" "$@"
     - python3
     - -u
     - -c
-    - "def rf_model(file_name , n_estimators=100):      \n                       \
-      \                                                                 \n\n#ip_file1:\
-      \ InputPath('CSV'), ip_file2: InputPath('CSV'), modelopfile: OutputPath('joblib'))->\
-      \ None:\n    from sklearn.ensemble import RandomForestClassifier\n    import\
-      \ joblib\n    from imblearn.over_sampling import SMOTE\n    from sklearn.model_selection\
-      \ import GridSearchCV\n    from sklearn.model_selection import train_test_split\n\
-      \    from sklearn.metrics import confusion_matrix\n\n    df_churn = pd.read_csv(file_name)\n\
-      \n    y1 = df_churn['Churn']\n    X1 = dfc_churn.drop(['churn_flag'],axis=1)\n\
+    - "def rf_model(input_df , n_estimators  = 100):      \n                     \
+      \                                                                   \n#file_name:\
+      \ InputPath('CSV'), n_estimators: int) \n#ip_file1: InputPath('CSV'), ip_file2:\
+      \ InputPath('CSV'), modelopfile: OutputPath('joblib'))-> None:\n    from sklearn.ensemble\
+      \ import RandomForestClassifier\n    import joblib\n    from imblearn.over_sampling\
+      \ import SMOTE\n    from sklearn.model_selection import GridSearchCV\n    from\
+      \ sklearn.model_selection import train_test_split\n    from sklearn.metrics\
+      \ import confusion_matrix\n\n    df_churn = input_df #pd.read_csv(file_name)\n\
+      \    n_est = n_estimators\n    y1 = df_churn['Churn']\n    X1 = dfc_churn.drop(['churn_flag'],axis=1)\n\
       \n    X_train, X_test, y_train, y_test = train_test_split(X1, y1, random_state=0)\n\
       \n    sm = SMOTE(random_state=0)\n    X_train_res, y_train_res = sm.fit_sample(X_train,\
       \ y_train)\n\n    param_grid = {\n        'n_estimators': [50, 100, 200],\n\
       \        'max_features': ['auto', 'sqrt', 'log2'],\n        'max_depth' : [2,4,5,6,7,8],\n\
-      \        'criterion' :['gini', 'entropy']\n    }\n\n    rfc=RandomForestClassifier(random_state=42)\n\
+      \        'criterion' :['gini', 'entropy']\n    }\n\n    rfc=RandomForestClassifier(random_state=42,n_estimators=n_est)\n\
       \    gsv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv= 5)\n \
       \   rfc.fit(X_train_res, y_train_res)\n\n    #rfc_best = gsv_rfc.best_estimator_\n\
       \    rfc_best=RandomForestClassifier(random_state=42, max_features='auto', n_estimators=\
@@ -53,8 +55,8 @@ implementation:
       \ TypeError('Value \"{}\" has type \"{}\" instead of int.'.format(str(int_value),\
       \ str(type(int_value))))\n    return str(int_value)\n\nimport argparse\n_parser\
       \ = argparse.ArgumentParser(prog='Rf model', description='')\n_parser.add_argument(\"\
-      --file-name\", dest=\"file_name\", type=str, required=True, default=argparse.SUPPRESS)\n\
-      _parser.add_argument(\"--n-estimators\", dest=\"n_estimators\", type=str, required=False,\
+      --input-df\", dest=\"input_df\", type=str, required=True, default=argparse.SUPPRESS)\n\
+      _parser.add_argument(\"--n-estimators\", dest=\"n_estimators\", type=int, required=False,\
       \ default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"\
       _output_paths\", type=str, nargs=4)\n_parsed_args = vars(_parser.parse_args())\n\
       _output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = rf_model(**_parsed_args)\n\
@@ -65,8 +67,8 @@ implementation:
       \    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n\
       \        f.write(_output_serializers[idx](_outputs[idx]))\n"
     args:
-    - --file-name
-    - inputPath: file_name
+    - --input-df
+    - inputValue: input_df
     - if:
         cond:
           isPresent: n_estimators

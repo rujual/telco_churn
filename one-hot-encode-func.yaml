@@ -1,10 +1,10 @@
 name: One hot encode
 inputs:
-- name: file_name
-  type: CSV
+- name: input_df
+  type: pd.DataFrame
 outputs:
 - name: Output
-  type: OutputPath
+  type: pd.DataFrame
 implementation:
   container:
     image: fastgenomics/sklearn
@@ -12,19 +12,20 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'pandas' 'matplotlib' 'numpy' 'sklearn' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
-      -m pip install --quiet --no-warn-script-location 'pandas' 'matplotlib' 'numpy'
-      'sklearn' --user) && "$0" "$@"
+      'pandas' 'matplotlib' 'numpy' 'scikit-learn' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'pandas' 'matplotlib'
+      'numpy' 'scikit-learn' --user) && "$0" "$@"
     - python3
     - -u
     - -c
-    - "def one_hot_encode(file_name )  :\n\n#                    out_file1_name: str,\
-      \ \n#                    out_file2_name: str) -> NamedTuple('Outputs',\n#  \
-      \                                                     [('out_file1_name', OutputPath('CSV')),\n\
-      #                                                        ('out_file2_name',\
-      \ OutputPath('CSV'))]):\n    #out_file2_name: OutputPath('CSV')) -> None:\n\n\
-      \    ## Import Required Libraries\n    import pandas as pd\n    import matplotlib.pyplot\
-      \ as plt\n    import numpy as np\n    import sklearn\n\n    df_churn = pd.read_csv(file_name)\
+    - "def one_hot_encode(input_df )  : #file_name: InputPath('CSV')) -> OutputPath:\n\
+      \n#                    out_file1_name: str, \n#                    out_file2_name:\
+      \ str) -> NamedTuple('Outputs',\n#                                         \
+      \              [('out_file1_name', OutputPath('CSV')),\n#                  \
+      \                                      ('out_file2_name', OutputPath('CSV'))]):\n\
+      \    #out_file2_name: OutputPath('CSV')) -> None:\n\n    ## Import Required\
+      \ Libraries\n    import pandas as pd\n    import matplotlib.pyplot as plt\n\
+      \    import numpy as np\n    import sklearn\n\n    df_churn = input_df #pd.read_csv(file_name)\
       \  \n\n    binary_cols = ['Partner','Dependents','PhoneService','PaperlessBilling']\n\
       \n    for i in binary_cols:\n        df_churn[i] = df_churn[i].replace({\"Yes\"\
       :1,\"No\":0})\n\n    #Encoding column 'gender'\n    df_churn['gender'] = df_churn['gender'].replace({\"\
@@ -35,20 +36,20 @@ implementation:
       \        df_churn.drop(cc, axis=1, inplace=True)\n        df_churn = df_churn.join(dummies)\n\
       \n    df_churn['Churn'] = df_churn['Churn'].replace({\"Yes\":1,\"No\":0})\n\n\
       \    #saving files may need a PV allocation to container\n    #output of files\
-      \ as Named tuple may cause problems    \n\n    df_churn.to_csv('Oht_enc_data.csv')\n\
-      \    out_path = \"./Oht_enc_data.csv\"\n    return out_path\n\nimport argparse\n\
-      _parser = argparse.ArgumentParser(prog='One hot encode', description='')\n_parser.add_argument(\"\
-      --file-name\", dest=\"file_name\", type=str, required=True, default=argparse.SUPPRESS)\n\
-      _parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str,\
-      \ nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"\
-      _output_paths\", [])\n\n_outputs = one_hot_encode(**_parsed_args)\n\nif not\
-      \ hasattr(_outputs, '__getitem__') or isinstance(_outputs, str):\n    _outputs\
-      \ = [_outputs]\n\n_output_serializers = [\n    str,\n\n]\n\nimport os\nfor idx,\
-      \ output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n\
+      \ as Named tuple may cause problems    \n\n    #df_churn.to_csv('Oht_enc_data.csv')\n\
+      \    #out_path = \"./Oht_enc_data.csv\"\n    return df_churn #out_path\n\nimport\
+      \ argparse\n_parser = argparse.ArgumentParser(prog='One hot encode', description='')\n\
+      _parser.add_argument(\"--input-df\", dest=\"input_df\", type=str, required=True,\
+      \ default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"\
+      _output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n\
+      _output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = one_hot_encode(**_parsed_args)\n\
+      \nif not hasattr(_outputs, '__getitem__') or isinstance(_outputs, str):\n  \
+      \  _outputs = [_outputs]\n\n_output_serializers = [\n    str,\n\n]\n\nimport\
+      \ os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n\
       \    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n\
       \        f.write(_output_serializers[idx](_outputs[idx]))\n"
     args:
-    - --file-name
-    - inputPath: file_name
+    - --input-df
+    - inputValue: input_df
     - '----output-paths'
     - outputPath: Output
