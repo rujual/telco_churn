@@ -21,7 +21,7 @@ def convert_data(df_churn):
     for i in empty_cols:
         df_churn[i]=df_churn[i].replace(" ",np.nan)
 
-    df_churn.drop('cluster number', axis=1, inplace=True)
+    df_churn.drop('cluster_number', axis=1, inplace=True)
     df_churn.drop('customerID', axis=1, inplace=True)
     df_churn=df_churn.dropna()
     binary_cols=['Partner','Dependents','PhoneService','PaperlessBilling']

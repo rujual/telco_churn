@@ -39,7 +39,7 @@ rfc_best = pickle.load(open('finalized_model.sav', 'rb'))
 # Filtering Data
 st.sidebar.header("Filter:")
 df_cat = [x for x in dfst.columns if len(dfst[x].unique()) < 6]
-df_cat.append('cluster number')
+df_cat.append('cluster_number')
 df_num = list(set(dfst.columns) - set(df_cat))
 grp = st.sidebar.multiselect("Select parameter(s) to Filter by: ", [x for x in df_cat])
 df_temp = df8.copy(deep=True)
@@ -165,7 +165,7 @@ def convert_data(df_churn):
     for i in empty_cols:
         df_churn[i] = df_churn[i].replace(" ", np.nan)
 
-    df_churn.drop(['customerID', 'cluster number'], axis=1, inplace=True)
+    df_churn.drop(['customerID', 'cluster_number'], axis=1, inplace=True)
     df_churn = df_churn.dropna()
     binary_cols = ['Partner', 'Dependents', 'PhoneService', 'PaperlessBilling']
 
