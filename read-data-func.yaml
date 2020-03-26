@@ -20,14 +20,14 @@ implementation:
     - "def read_data(file_name )  : \n\n    ## Import Required Libraries\n    import\
       \ pandas as pd\n    import numpy as np\n\n    #This line may cause problems\
       \ as file is on the system and not inside container\n    #Importing directly\
-      \ from Github Raw Content\n\n    df_churn = pd.read_csv(file_name)\n    col1\
-      \ = len(df_churn.columns)\n\n    empty_cols=['customerID', 'gender', 'SeniorCitizen',\
-      \ 'Partner', 'Dependents',\n           'tenure', 'PhoneService', 'MultipleLines',\
-      \ 'InternetService',\n           'OnlineSecurity', 'OnlineBackup', 'DeviceProtection','TechSupport',\n\
-      \           'StreamingTV', 'StreamingMovies', 'Contract', 'PaperlessBilling',\n\
-      \           'PaymentMethod', 'MonthlyCharges', 'TotalCharges', 'Churn']\n\n\
-      \    for i in empty_cols:\n        df_churn[i]=df_churn[i].replace(\" \",np.nan)\n\
-      \n    df_churn.drop(['customerID','cluster number'], axis=1, inplace=True)\n\
+      \ from Github Raw Content\n\n    df_churn = pd.read_csv(file_name, error_bad_lines=False)\n\
+      \    col1 = len(df_churn.columns)\n\n    empty_cols=['customerID', 'gender',\
+      \ 'SeniorCitizen', 'Partner', 'Dependents',\n           'tenure', 'PhoneService',\
+      \ 'MultipleLines', 'InternetService',\n           'OnlineSecurity', 'OnlineBackup',\
+      \ 'DeviceProtection','TechSupport',\n           'StreamingTV', 'StreamingMovies',\
+      \ 'Contract', 'PaperlessBilling',\n           'PaymentMethod', 'MonthlyCharges',\
+      \ 'TotalCharges', 'Churn']\n\n    for i in empty_cols:\n        df_churn[i]=df_churn[i].replace(\"\
+      \ \",np.nan)\n\n    df_churn.drop(['customerID','cluster number'], axis=1, inplace=True)\n\
       \    df_churn = df_churn.dropna()\n    #df_churn.to_string()\n    return df_churn\n\
       \nimport argparse\n_parser = argparse.ArgumentParser(prog='Read data', description='')\n\
       _parser.add_argument(\"--file-name\", dest=\"file_name\", type=str, required=True,\
