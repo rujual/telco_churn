@@ -22,10 +22,9 @@ implementation:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'scikit-learn==0.19.1' 'numpy==1.17.2' 'pandas==0.25.1' 'imbalanced-learn==0.6.2'
-      || PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'scikit-learn==0.19.1' 'numpy==1.17.2' 'pandas==0.25.1' 'imbalanced-learn==0.6.2'
-      --user) && "$0" "$@"
+      'scikit-learn==0.19.1' 'numpy' 'pandas' 'imbalanced-learn==0.6.2' || PIP_DISABLE_PIP_VERSION_CHECK=1
+      python3 -m pip install --quiet --no-warn-script-location 'scikit-learn==0.19.1'
+      'numpy' 'pandas' 'imbalanced-learn==0.6.2' --user) && "$0" "$@"
     - python3
     - -u
     - -c
