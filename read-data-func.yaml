@@ -29,15 +29,15 @@ implementation:
       \           'PaymentMethod', 'MonthlyCharges', 'TotalCharges', 'Churn']\n\n\
       \    for i in empty_cols:\n        df_churn[i]=df_churn[i].replace(\" \",np.nan)\n\
       \n    df_churn.drop(['customerID','cluster number'], axis=1, inplace=True)\n\
-      \    df_churn = df_churn.dropna()\n\n    return df_churn\n\nimport argparse\n\
-      _parser = argparse.ArgumentParser(prog='Read data', description='')\n_parser.add_argument(\"\
-      --file-name\", dest=\"file_name\", type=str, required=True, default=argparse.SUPPRESS)\n\
-      _parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str,\
-      \ nargs=1)\n_parsed_args = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"\
-      _output_paths\", [])\n\n_outputs = read_data(**_parsed_args)\n\nif not hasattr(_outputs,\
-      \ '__getitem__') or isinstance(_outputs, str):\n    _outputs = [_outputs]\n\n\
-      _output_serializers = [\n    str,\n\n]\n\nimport os\nfor idx, output_file in\
-      \ enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n\
+      \    df_churn = df_churn.dropna()\n    #df_churn.to_string()\n    return df_churn\n\
+      \nimport argparse\n_parser = argparse.ArgumentParser(prog='Read data', description='')\n\
+      _parser.add_argument(\"--file-name\", dest=\"file_name\", type=str, required=True,\
+      \ default=argparse.SUPPRESS)\n_parser.add_argument(\"----output-paths\", dest=\"\
+      _output_paths\", type=str, nargs=1)\n_parsed_args = vars(_parser.parse_args())\n\
+      _output_files = _parsed_args.pop(\"_output_paths\", [])\n\n_outputs = read_data(**_parsed_args)\n\
+      \nif not hasattr(_outputs, '__getitem__') or isinstance(_outputs, str):\n  \
+      \  _outputs = [_outputs]\n\n_output_serializers = [\n    str,\n\n]\n\nimport\
+      \ os\nfor idx, output_file in enumerate(_output_files):\n    try:\n        os.makedirs(os.path.dirname(output_file))\n\
       \    except OSError:\n        pass\n    with open(output_file, 'w') as f:\n\
       \        f.write(_output_serializers[idx](_outputs[idx]))\n"
     args:
