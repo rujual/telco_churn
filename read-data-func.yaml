@@ -1,38 +1,36 @@
 name: Read data
 inputs:
 - name: file_name
-  type: CSV
+  type: String
 outputs:
 - name: Output
   type: pd.DataFrame
 implementation:
   container:
-    image: fastgenomics/sklearn
+    image: tensorflow/tensorflow:1.13.2-py3
     command:
     - sh
     - -c
     - (PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --no-warn-script-location
-      'pandas' 'matplotlib' 'numpy' 'scikit-learn' || PIP_DISABLE_PIP_VERSION_CHECK=1
-      python3 -m pip install --quiet --no-warn-script-location 'pandas' 'matplotlib'
-      'numpy' 'scikit-learn' --user) && "$0" "$@"
+      'numpy==1.17.2' 'pandas==0.25.1' || PIP_DISABLE_PIP_VERSION_CHECK=1 python3
+      -m pip install --quiet --no-warn-script-location 'numpy==1.17.2' 'pandas==0.25.1'
+      --user) && "$0" "$@"
     - python3
     - -u
     - -c
-    - "def read_data(file_name )  :   \n\n    #OutputPath('CSV'):\n        # -> NamedTuple('Outputs',\
-      \ [('Cols_drop', int),('Cols_retained', int)]):\n\n    ## Import Required Libraries\n\
-      \    import pandas as pd\n    import matplotlib.pyplot as plt\n    import numpy\
-      \ as np\n    import sklearn\n\n    #This line may cause problems as file is\
-      \ on the system and not inside container\n\n    df_churn = pd.read_csv(file_name)\n\
-      \    col1 = len(df_churn.columns)\n    df_churn = df_churn.drop(columns=[])\n\
-      \n    empty_cols=['customerID', 'gender', 'SeniorCitizen', 'Partner', 'Dependents',\n\
+    - "def read_data(file_name )  :\n\n#(file_name: InputPath('CSV')) -> 'pd.DataFrame':\
+      \   \n\n    ## Import Required Libraries\n    import pandas as pd\n    import\
+      \ numpy as np\n\n    #This line may cause problems as file is on the system\
+      \ and not inside container\n    #Importing directly from Github Raw Content\n\
+      \n    df_churn = pd.read_csv(file_name)\n    col1 = len(df_churn.columns)\n\n\
+      \    empty_cols=['customerID', 'gender', 'SeniorCitizen', 'Partner', 'Dependents',\n\
       \           'tenure', 'PhoneService', 'MultipleLines', 'InternetService',\n\
       \           'OnlineSecurity', 'OnlineBackup', 'DeviceProtection','TechSupport',\n\
       \           'StreamingTV', 'StreamingMovies', 'Contract', 'PaperlessBilling',\n\
       \           'PaymentMethod', 'MonthlyCharges', 'TotalCharges', 'Churn']\n\n\
       \    for i in empty_cols:\n        df_churn[i]=df_churn[i].replace(\" \",np.nan)\n\
-      \n    df_churn.drop('customerID','cluster number', axis=1, inplace=True)\n \
-      \   df_churn = df_churn.dropna()\n\n    col2 = len(df.columns)\n    #df_churn.to_csv('Cleaned_data.csv')\n\
-      \    #out_path = \"./Cleaned_data.csv\"\n\n    return df_churn\n\nimport argparse\n\
+      \n    df_churn.drop(['customerID','cluster number'], axis=1, inplace=True)\n\
+      \    df_churn = df_churn.dropna()\n\n    return df_churn\n\nimport argparse\n\
       _parser = argparse.ArgumentParser(prog='Read data', description='')\n_parser.add_argument(\"\
       --file-name\", dest=\"file_name\", type=str, required=True, default=argparse.SUPPRESS)\n\
       _parser.add_argument(\"----output-paths\", dest=\"_output_paths\", type=str,\
@@ -45,6 +43,6 @@ implementation:
       \        f.write(_output_serializers[idx](_outputs[idx]))\n"
     args:
     - --file-name
-    - inputPath: file_name
+    - inputValue: file_name
     - '----output-paths'
     - outputPath: Output
